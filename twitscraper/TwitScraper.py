@@ -14,6 +14,7 @@ class TwitScrapeException(Exception): pass
 class TwitScraper(object):
 
 	def __init__(self, symbols: list = [], hydrate: bool = False):
+		self._symbols = symbols
 		self._sentiment = {}
 		self._volume = {}
 		self._twits = {}
@@ -24,18 +25,46 @@ class TwitScraper(object):
 				'https://api.stocktwits.com/api/2/streams/symbol/ric'
 			]
 		}
-		self._symbols = symbols
+
 		if hydrate:
 			self.hydrate()
 
 	def symbols(self) -> list:
 		"""Return a list of valid symbols"""
 		return self._symbols
+	
+	def get_twits(self, symbol: str) -> list:
+		"""Get list of twits for `symbol`"""
+		if symbol in self.symbols() and symbol in self._twits.keys():
+			return self._twits[symbol]
+		
+		return []
 
+	def get_sentiment_volume(self, symbol: str) -> tuple:
+		"""Get sentiment and volume for `symbol`"""
+		check = lambda symbol: symbol in self.symbols()
+		check_sent = lambda symbol: symbol in self._sentiment.keys()
+		check_vol = lambda symbol: symbol in self._volume.keys()
+
+		sentiment = self._sentiment[symbol] if check(symbol) and check_sent(symbol) else ""
+		volume = self._volume[symbol] if check(symbol) and check_vol(symbol) else ""
+
+		return (sentiment, volume)
+
+	def add_symbol(self, symbol: str):
+		"""Add new symbol to scrapers list"""
+		if symbol not in self._symbols:
+			self._symbols.append(symbol)
+	
 	def hydrate(self):
 		"""Hydrate scraper with sentiment, volume, and twits"""
+
+		# Track symbols that are invalid
 		invalid = []
+
 		for symbol in self.symbols():
+
+			# Attempt to scrape sentiment + volume
 			try:
 				self.pull_sentiment_volume(symbol)
 			except SVScrapeException as e:
@@ -47,6 +76,7 @@ class TwitScraper(object):
 				self._volume[symbol] = None
 				print("Error scraping sentiment and/or volume: %s" % e)
 
+			# Attempt to scrape twits
 			try:
 				self.pull_twits(symbol)
 			except TwitScrapeException as e:
@@ -56,8 +86,12 @@ class TwitScraper(object):
 				self._twits[symbol] = None
 				print("Error scraping twits: %s" % e)
 
-			
-			if self._sentiment[symbol] == None and self._volume[symbol] == None and self._twits[symbol] == None:
+			# If no data was able to be scraped, consider this symbol 'Invalid'
+			if (
+				self._sentiment[symbol] == None 
+				and self._volume[symbol] == None 
+				and self._twits[symbol] == None
+			):
 				invalid.append(symbol)
 
 		# Remove invalid symbols
@@ -113,20 +147,3 @@ class TwitScraper(object):
 		print("%s Sentiment Change: %s%%" % (symbol, self._sentiment[symbol]))
 		print("%s Volume Change: %s%%" % (symbol, self._volume[symbol]))
 		print('----------------------')
-
-	def get_twits(self, symbol: str) -> list:
-		"""Get list of twits for `symbol`"""
-		if symbol in self.symbols() and symbol in self._twits.keys():
-			return self._twits[symbol]
-		return []
-
-	def get_sentiment_volume(self, symbol: str) -> tuple:
-		"""Get sentiment and volume for `symbol`"""
-		sentiment = self._sentiment[symbol] if symbol in self.symbols() and symbol in self._sentiment.keys() else ""
-		volume = self._volume[symbol] if symbol in self.symbols() and symbol in self._volume.keys() else ""
-		return (sentiment, volume)
-
-	def add_symbol(self, symbol: str):
-		"""Add new symbol to scrapers list"""
-		if symbol not in self._symbols:
-			self._symbols.append(symbol)
