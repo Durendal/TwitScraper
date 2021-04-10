@@ -28,7 +28,7 @@ class TwitScraper(object):
 		if hydrate:
 			self.hydrate()
 
-	def symbols(self):
+	def symbols(self) -> list:
 		"""Return a list of valid symbols"""
 		return self._symbols
 
