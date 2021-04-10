@@ -56,12 +56,13 @@ class TwitScraper(object):
 				self._twits[symbol] = None
 				print("Error scraping twits: %s" % e)
 
-			# Remove invalid symbols
+			
 			if self._sentiment[symbol] == None and self._volume[symbol] == None and self._twits[symbol] == None:
 				invalid.append(symbol)
 
-		for symbol in invalid:
-			self._symbols.remove(symbol)
+		# Remove invalid symbols
+		[self._symbols.remove(symbol) for symbol in invalid]
+			
 
 
 	def pull_sentiment_volume(self, symbol: str):
