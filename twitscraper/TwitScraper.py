@@ -94,7 +94,7 @@ class TwitScraper(object):
 		return body, likes, username
 
 	def print_twits(self, symbol: str):
-		"""Print out the currently stored twits"""
+		"""Print out the currently stored twits for `symbol`"""
 		print('----------------------')
 		print("Twits for %s:" % symbol)
 		print('----------------------')
@@ -106,7 +106,7 @@ class TwitScraper(object):
 			print('=================================')
 
 	def print_sentiment_volume(self, symbol: str):
-		"""Print out the currently stored sentiment and volume"""
+		"""Print out the currently stored sentiment and volume for `symbol`"""
 		if symbol not in self._sentiment.keys() or symbol not in self._volume.keys(): return
 		print('----------------------')
 		print("%s Sentiment Change: %s%%" % (symbol, self._sentiment[symbol]))
@@ -114,11 +114,13 @@ class TwitScraper(object):
 		print('----------------------')
 
 	def get_twits(self, symbol: str) -> list:
+		"""Get list of twits for `symbol`"""
 		if symbol in self.symbols() and symbol in self._twits.keys():
 			return self._twits[symbol]
 		return []
 
 	def get_sentiment_volume(self, symbol: str) -> tuple:
+		"""Get sentiment and volume for `symbol`"""
 		sentiment = self._sentiment[symbol] if symbol in self.symbols() and symbol in self._sentiment.keys() else ""
 		volume = self._volume[symbol] if symbol in self.symbols() and symbol in self._volume.keys() else ""
 		return (sentiment, volume)
