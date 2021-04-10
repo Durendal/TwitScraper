@@ -125,3 +125,8 @@ class TwitScraper(object):
 		sentiment = self._sentiment[symbol] if symbol in self.symbols() and symbol in self._sentiment.keys() else ""
 		volume = self._volume[symbol] if symbol in self.symbols() and symbol in self._volume.keys() else ""
 		return (sentiment, volume)
+
+	def add_symbol(self, symbol: str):
+		"""Add new symbol to scrapers list"""
+		if symbol not in self._symbols:
+			self._symbols.append(symbol)
