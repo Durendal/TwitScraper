@@ -113,3 +113,12 @@ class TwitScraper(object):
 		print("%s Volume Change: %s%%" % (symbol, self._volume[symbol]))
 		print('----------------------')
 
+	def get_twits(self, symbol: str) -> list:
+		if symbol in self.symbols() and symbol in self._twits.keys():
+			return self._twits[symbol]
+		return []
+
+	def get_sentiment_volume(self, symbol: str) -> tuple:
+		sentiment = self._sentiment[symbol] if symbol in self.symbols() and symbol in self._sentiment.keys() else ""
+		volume = self._volume[symbol] if symbol in self.symbols() and symbol in self._volume.keys() else ""
+		return (sentiment, volume)
