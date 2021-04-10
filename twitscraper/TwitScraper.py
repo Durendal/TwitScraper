@@ -1,4 +1,3 @@
-import time
 import json
 import re
 
@@ -10,6 +9,10 @@ class SVScrapeException(Exception): pass
 # Exception to throw when scraping twits fails
 class TwitScrapeException(Exception): pass
 
+check = lambda cls, symbol: symbol in cls.symbols()
+check_sent = lambda cls, symbol: symbol in cls._sentiment.keys()
+check_vol = lambda cls, symbol: symbol in cls._volume.keys()
+check_twit = lambda cls, symbol: symbol in cls._twits.keys()
 
 class TwitScraper(object):
 
@@ -35,25 +38,21 @@ class TwitScraper(object):
 	
 	def get_twits(self, symbol: str) -> list:
 		"""Get list of twits for `symbol`"""
-		if symbol in self.symbols() and symbol in self._twits.keys():
+		if check(self, symbols) and check_twit(self, symbol):
 			return self._twits[symbol]
 		
 		return []
 
 	def get_sentiment_volume(self, symbol: str) -> tuple:
 		"""Get sentiment and volume for `symbol`"""
-		check = lambda symbol: symbol in self.symbols()
-		check_sent = lambda symbol: symbol in self._sentiment.keys()
-		check_vol = lambda symbol: symbol in self._volume.keys()
-
-		sentiment = self._sentiment[symbol] if check(symbol) and check_sent(symbol) else ""
-		volume = self._volume[symbol] if check(symbol) and check_vol(symbol) else ""
+		sentiment = self._sentiment[symbol] if check(self, symbol) and check_sent(self, symbol) else ""
+		volume = self._volume[symbol] if check(self, symbol) and check_vol(self, symbol) else ""
 
 		return (sentiment, volume)
 
 	def add_symbol(self, symbol: str):
 		"""Add new symbol to scrapers list"""
-		if symbol not in self._symbols:
+		if not check(symbol):
 			self._symbols.append(symbol)
 	
 	def hydrate(self):
@@ -96,8 +95,6 @@ class TwitScraper(object):
 
 		# Remove invalid symbols
 		[self._symbols.remove(symbol) for symbol in invalid]
-			
-
 
 	def pull_sentiment_volume(self, symbol: str):
 		"""Scrape Sentiment and Volume for `symbol`"""
@@ -142,7 +139,7 @@ class TwitScraper(object):
 
 	def print_sentiment_volume(self, symbol: str):
 		"""Print out the currently stored sentiment and volume for `symbol`"""
-		if symbol not in self._sentiment.keys() or symbol not in self._volume.keys(): return
+		if not check_sent(self, symbol) or not check_vol(self, symbol): return
 		print('----------------------')
 		print("%s Sentiment Change: %s%%" % (symbol, self._sentiment[symbol]))
 		print("%s Volume Change: %s%%" % (symbol, self._volume[symbol]))
